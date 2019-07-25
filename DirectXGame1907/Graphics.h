@@ -1,31 +1,20 @@
 #pragma once
 #include <Windows.h>
-// DirectX11
+// DirectX11ヘッダー
 #include <d3d11.h>
-
-// 解放用テンプレート
-template<class T>
-void SefeRelease(T*& p)
-{
-	if(p)
-	{
-		p->Release();
-		p = nullptr;
-	}
-}
 
 class Graphics
 {
 public:
-	Graphics(void);
-	~Graphics(void);
-
-	// 初期化
-	bool Initialize(WinMain& window);
-	// 終了処理
-	void Finalize(void);
-
-public:
-	// デバイスの取得
-	ID3D11Device * GetDevice(void) {}
+	Graphics( HWND hWnd );
+	Graphics( const Graphics& ) = delete;
+	Graphics& operator=( const Graphics& ) = delete;
+	~Graphics();
+	void EndFrame();
+	void ClearBuffer( float red, float green, float blue ) noexcept;
+private:
+	ID3D11Device* pDevice = nullptr;
+	IDXGISwapChain* pSwapChain = nullptr;
+	ID3D11DeviceContext* pDeviceContext = nullptr;
+	ID3D11RenderTargetView* pTarget = nullptr;
 };
