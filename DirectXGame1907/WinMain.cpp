@@ -1,5 +1,5 @@
 // Win32API
-#include <Windows.h>
+#include "Window.h"
 
 // ウィンドウプロシージャ
 LRESULT CALLBACK WndProc(
