@@ -7,7 +7,7 @@ int CALLBACK WinMain(
 	LPSTR     lpCmdLine,
 	int       nCmdShow)
 {
+	// マスタ―フレーム
 	App{}.Go();	
-
 	return -1;
 }

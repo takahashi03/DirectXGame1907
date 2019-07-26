@@ -1,9 +1,9 @@
 #include "Window.h"
-#include <sstream>
 
 // ウィンドウクラス
 Window::WindowClass Window::WindowClass::windowClass;
 
+// コンストラクタ
 Window::WindowClass::WindowClass() noexcept
 	:
 	hInstance( GetModuleHandle(nullptr) )
@@ -12,10 +12,12 @@ Window::WindowClass::WindowClass() noexcept
 	WNDCLASSEX wc = { 0 };
 	// 構造体のサイズ
 	wc.cbSize = sizeof( wc );
-	// ウィンドウスタイル
-	// CS_HREDRAW 水平方向のサイズ変更時にウィンドウ全体を再描画する
-	// CS_VREDRAW 垂直方向のサイズ変更時にウィンドウ全体を再描画する
-	wc.style = CS_HREDRAW | CS_VREDRAW;
+	// ウィンドウスタイル	
+	wc.style = 
+		// CS_HREDRAW 水平方向のサイズ変更時にウィンドウ全体を再描画する
+		CS_HREDRAW |
+		// CS_VREDRAW 垂直方向のサイズ変更時にウィンドウ全体を再描画する
+		CS_VREDRAW;
 	// ウインドウのメッセージを処理するコールバック関数へのポインタを指定
 	wc.lpfnWndProc = HandleMsgSetup;
 	// ウィンドウクラスの追加領域 通常0
@@ -38,22 +40,27 @@ Window::WindowClass::WindowClass() noexcept
 	// ウィンドウクラスの登録
 	RegisterClassEx( &wc );
 }
+
+// デスストラクタ
 Window::WindowClass::~WindowClass()
 {
+	// ウィンドウの削除
 	UnregisterClass( windowClassName, GetInstance() );
 }
 
+// ウィンドウクラス名の取得
 const char* Window::WindowClass::GetName() noexcept
 {
 	return windowClassName;
 }
 
+// ウィンドウクラスインスタンスの取得
 HINSTANCE Window::WindowClass::GetInstance() noexcept
 {
 	return windowClass.hInstance;
 }
 
-// ウィンドウ
+// コンストラクタ
 Window::Window( int width, int height, const char* name ) :
 	width( width ),
 	height( height )
@@ -102,16 +109,14 @@ Window::Window( int width, int height, const char* name ) :
 	// ウィンドウ表示
 	ShowWindow( hWnd, SW_SHOWDEFAULT );
 
+	// Graphicsスマートポインタ
 	pGfx = std::make_unique<Graphics>( hWnd );
 }
 
+// デスストラクタ
 Window::~Window()
 {
 	DestroyWindow( hWnd );
-}
-
-void Window::SetTitle(const std::string& title)
-{
 }
 
 std::optional<int> Window::ProcessMessages()
@@ -124,7 +129,8 @@ std::optional<int> Window::ProcessMessages()
 		if ( msg.message == WM_QUIT )
 		{
 			return ( int )msg.wParam;
-		}	
+		}
+
 		// メッセージをウインドウプロシージャへ
 		TranslateMessage( &msg );
 		DispatchMessage( &msg );
@@ -139,32 +145,25 @@ Graphics & Window::Gfx()
 
 LRESULT CALLBACK Window::HandleMsgSetup( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam ) noexcept
 {
-	// WinAPI側でウィンドウクラスポインタを格納するためにCreateWindow（）から渡されたcreateパラメータを使う
 	if ( msg == WM_NCCREATE )
 	{
-		// 作成データからウィンドウクラスへのptrの抽出
 		const CREATESTRUCTW* const pCreate = reinterpret_cast<CREATESTRUCTW*>( lParam );
 		Window* const pWnd = static_cast<Window*>( pCreate->lpCreateParams );
-		// ウィンドウインスタンスにptrを格納するようにWinAPI管理のユーザーデータを設定します。
 		SetWindowLongPtr( hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>( pWnd ) );
-		// セットアップが終了したので、メッセージprocを通常の（非セットアップ）ハンドラに設定します
 		SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>( &Window::HandleMsgThunk) );
-		// ウィンドウインスタンスハンドラにメッセージを転送する
-		return pWnd->HandleMsg( hWnd, msg, wParam, lParam );
+		return pWnd->WndProc( hWnd, msg, wParam, lParam );
 	}
-	// WM_NCCREATEメッセージの前にメッセージが表示されたら、
 	return DefWindowProc( hWnd, msg, wParam, lParam );
 }
 
 LRESULT CALLBACK Window::HandleMsgThunk( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam ) noexcept
 {
-	// ウィンドウインスタンスへのptrを取得する
 	Window* const pWnd = reinterpret_cast<Window*>( GetWindowLongPtr( hWnd, GWLP_USERDATA ) );
-	// ウィンドウインスタンスハンドラにメッセージを転送する
-	return pWnd->HandleMsg( hWnd, msg, wParam, lParam );
+	return pWnd->WndProc( hWnd, msg, wParam, lParam );
 }
 
-LRESULT Window::HandleMsg( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam ) noexcept
+// ウィンドウプロシージャ
+LRESULT Window::WndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam ) noexcept
 {
 	switch ( msg )
 	{

@@ -6,11 +6,15 @@
 class Graphics
 {
 public:
+	// コンストラクタ
 	Graphics( HWND hWnd );
 	Graphics( const Graphics& ) = delete;
 	Graphics& operator=( const Graphics& ) = delete;
+	// デスストラクタ
 	~Graphics();
+	// 最後のフレーム
 	void EndFrame();
+	// クリアバッファ
 	void ClearBuffer( float red, float green, float blue ) noexcept;
 private:
 	ID3D11Device* pDevice = nullptr;

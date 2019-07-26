@@ -3,6 +3,7 @@
 // DirectX11ライブラリ
 #pragma comment(lib,"d3d11.lib")
 
+// コンストラクタ
 Graphics::Graphics(HWND hWnd)
 {
 	// スワップチェイン
@@ -58,6 +59,7 @@ Graphics::Graphics(HWND hWnd)
 	pBackBuffer->Release();
 }
 
+// デスストラクタ
 Graphics::~Graphics()
 {
 	if ( pDeviceContext != nullptr )
@@ -74,11 +76,13 @@ Graphics::~Graphics()
 	}
 }
 
+// 最期のフレーム
 void Graphics::EndFrame()
 {
 	pSwapChain -> Present( 1u, 0u );
 }
 
+// クリアバッファ
 void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 {
 	const float color[] = { red,green,blue,1.0f };
