@@ -170,6 +170,101 @@ LRESULT Window::WndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam ) noe
 	case WM_CLOSE:
 		PostQuitMessage(0);
 		return 0;
+	case WM_KILLFOCUS:
+		// キーステートのクリア
+		keyboard.ClearState();
+		break;
+
+		// キーボードメッセージ
+	case WM_KEYDOWN:
+
+	case WM_SYSKEYDOWN:
+		//キーリピートまたはキーボードのキーリピートが有効なら
+		if (!(lParam & 0x40000000) || keyboard.IsAutoRepeatIsEnabled()) // filter autorepeat
+		{
+			keyboard.OnKeyDowned(static_cast<unsigned char>(wParam));
+		}
+		break;
+	case WM_KEYUP:
+	case WM_SYSKEYUP:
+		keyboard.OnKeyUped(static_cast<unsigned char>(wParam));
+		break;
+
+	case WM_CHAR:
+		keyboard.OnChar(static_cast<unsigned char>(wParam));
+		break;
+
+		// マウスメッセージ
+	case WM_MOUSEMOVE:
+	{
+		const POINTS pt = MAKEPOINTS(lParam);
+
+		if (pt.x >= 0 && pt.x < width && pt.y >= 0 && pt.y < height)
+		{
+			mouse.OnMouseMove(pt.x, pt.y);
+			if (!mouse.IsInWindow())
+			{
+				SetCapture(hWnd);
+				mouse.OnMouseEnter();
+			}
+		}
+		else
+		{
+			if (wParam & (MK_LBUTTON | MK_RBUTTON))
+			{
+				mouse.OnMouseMove(pt.x, pt.y);
+			}
+			else
+			{
+				ReleaseCapture();
+				mouse.OnMouseLeave();
+			}
+		}
+		break;
+	}
+	case WM_LBUTTONDOWN:
+	{
+		SetForegroundWindow(hWnd);
+		const POINTS pt = MAKEPOINTS(lParam);
+		mouse.OnLeftDowned(pt.x, pt.y);		
+		break;
+	}
+	case WM_RBUTTONDOWN:
+	{
+		SetForegroundWindow(hWnd);
+		const POINTS pt = MAKEPOINTS(lParam);
+		mouse.OnRightDowned(pt.x, pt.y);
+		break;
+	}
+	case WM_LBUTTONUP:
+	{
+		const POINTS pt = MAKEPOINTS(lParam);
+		mouse.OnLeftUped(pt.x, pt.y);
+		if (pt.x < 0 || pt.x >= width || pt.y < 0 || pt.y >= height)
+		{
+			ReleaseCapture();
+			mouse.OnMouseLeave();
+		}
+		break;
+	}
+	case WM_RBUTTONUP:
+	{
+		const POINTS pt = MAKEPOINTS(lParam);
+		mouse.OnRightUped(pt.x, pt.y);
+		if (pt.x < 0 || pt.x >= width || pt.y < 0 || pt.y >= height)
+		{
+			ReleaseCapture();
+			mouse.OnMouseLeave();
+		}
+		break;
+	}
+	case WM_MOUSEWHEEL:
+	{
+		const POINTS pt = MAKEPOINTS(lParam);
+		const int delta = GET_WHEEL_DELTA_WPARAM(wParam);
+		mouse.OnWheelDelta(pt.x, pt.y, delta);
+		break;
+	}
 	}
 	return DefWindowProc( hWnd, msg, wParam, lParam );
 }

@@ -2,6 +2,8 @@
 #include <Windows.h>
 #include <optional>
 #include <memory>
+#include "Keyboard.h"
+#include "Mouse.h"
 #include "Graphics.h"
 
 class Window
@@ -33,6 +35,9 @@ private:
 	static LRESULT CALLBACK HandleMsgSetup( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam ) noexcept;
 	static LRESULT CALLBACK HandleMsgThunk( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam ) noexcept;
 	LRESULT WndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam ) noexcept;
+public:
+	Keyboard keyboard;
+	Mouse mouse;
 private:
 	int width;
 	int height;
